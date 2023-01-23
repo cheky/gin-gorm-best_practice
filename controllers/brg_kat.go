@@ -9,29 +9,42 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type Form_brg_kat struct {
+	Nm_kat string `form:"nm_kat" json:"nm_kat" binding:"required"`
+	Aktif  string `form:"aktif" json:"aktif" binding:"required"`
+}
+type Uri_brg_kat struct {
+	Kd_kat int `uri:"kd_kat" binding:"required"`
+}
+
+var messages_form_brg_kat = []map[string]interface{}{
+	{
+		"field": "nm_kat",
+		"messages": map[string]interface{}{
+			"required": "Nama kategori harus diisi",
+		},
+	},
+	{
+		"field": "aktif",
+		"messages": map[string]interface{}{
+			"required": "Status kategori harus diisi",
+		},
+	},
+}
+var messages_uri_brg_kat = []map[string]interface{}{
+	{
+		"field": "kd_kat",
+		"messages": map[string]interface{}{
+			"required": "Kode kategori harus diisi",
+		},
+	},
+}
+
 func Add_brg_kat(c *gin.Context) {
 
-	type Input_add_brg_kat struct {
-		Nm_kat string `form:"nm_kat" json:"nm_kat" binding:"required"`
-		Aktif  string `form:"aktif" json:"aktif" binding:"required"`
-	}
-	body := Input_add_brg_kat{}
+	body := Form_brg_kat{}
 	if err := c.ShouldBind(&body); err != nil {
-		var messages = []map[string]interface{}{
-			{
-				"field": "nm_kat",
-				"messages": map[string]interface{}{
-					"required": "Nama kategori harus diisi",
-				},
-			},
-			{
-				"field": "aktif",
-				"messages": map[string]interface{}{
-					"required": "Status kategori harus diisi",
-				},
-			},
-		}
-		validate := libraries.ValidationRules(messages, err)
+		validate := libraries.ValidationRules(messages_form_brg_kat, err)
 		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
 		return
 	}
@@ -45,53 +58,25 @@ func Add_brg_kat(c *gin.Context) {
 	}
 }
 func Edit_brg_kat(c *gin.Context) {
-	type Input_add_brg_kat struct {
-		Nm_kat string `form:"nm_kat" json:"nm_kat" binding:"required"`
-		Aktif  string `form:"aktif" json:"aktif" binding:"required"`
-	}
-	type Query_add_brg_kat struct {
-		Kd_kat int `uri:"kd_kat" binding:"required"`
-	}
-	body := Input_add_brg_kat{}
+
+	body := Form_brg_kat{}
 	if err := c.ShouldBind(&body); err != nil {
-		var messages = []map[string]interface{}{
-			{
-				"field": "nm_kat",
-				"messages": map[string]interface{}{
-					"required": "Nama kategori harus diisi",
-				},
-			},
-			{
-				"field": "aktif",
-				"messages": map[string]interface{}{
-					"required": "Status kategori harus diisi",
-				},
-			},
-		}
-		validate := libraries.ValidationRules(messages, err)
+		validate := libraries.ValidationRules(messages_form_brg_kat, err)
 		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
 		return
 	}
-	query := Query_add_brg_kat{}
-	if err := c.ShouldBindUri(&query); err != nil {
-		var messages = []map[string]interface{}{
-			{
-				"field": "kd_kat",
-				"messages": map[string]interface{}{
-					"required": "Kode kategori harus diisi",
-				},
-			},
-		}
-		validate := libraries.ValidationRules(messages, err)
+	uri := Uri_brg_kat{}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		validate := libraries.ValidationRules(messages_uri_brg_kat, err)
 		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
 		return
 	}
 	brg_kat := models.Brg_kat{}
 	Mysql := config.InitMysql()
 	var count int64
-	Mysql.Model(&brg_kat).Where("kd_kat", query.Kd_kat).Count(&count)
+	Mysql.Model(&brg_kat).Where("kd_kat", uri.Kd_kat).Count(&count)
 	if count > 0 {
-		update := Mysql.Model(&brg_kat).Where("kd_kat", query.Kd_kat).Updates(map[string]interface{}{
+		update := Mysql.Model(&brg_kat).Where("kd_kat", uri.Kd_kat).Updates(map[string]interface{}{
 			"nm_kat": body.Nm_kat,
 			"aktif":  body.Aktif,
 		})
@@ -107,30 +92,18 @@ func Edit_brg_kat(c *gin.Context) {
 	}
 }
 func Delete_brg_kat(c *gin.Context) {
-	type Query_brg_kat struct {
-		Kd_kat int `uri:"kd_kat" binding:"required,number"`
-	}
-	query := Query_brg_kat{}
-	if err := c.ShouldBindUri(&query); err != nil {
-		var messages = []map[string]interface{}{
-			{
-				"field": "kd_kat",
-				"messages": map[string]interface{}{
-					"required": "Kode kategori harus diisi",
-					"number":   "Kode kategori harus diisi dengan angka",
-				},
-			},
-		}
-		validate := libraries.ValidationRules(messages, err)
+	uri := Uri_brg_kat{}
+	if err := c.ShouldBindUri(&uri); err != nil {
+		validate := libraries.ValidationRules(messages_uri_brg_kat, err)
 		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
 		return
 	}
 	brg_kat := models.Brg_kat{}
 	Mysql := config.InitMysql()
 	var count int64
-	Mysql.Model(&brg_kat).Where("kd_kat", query.Kd_kat).Count(&count)
+	Mysql.Model(&brg_kat).Where("kd_kat", uri.Kd_kat).Count(&count)
 	if count > 0 {
-		delete := Mysql.Where("kd_kat=?", query.Kd_kat).Delete(&brg_kat)
+		delete := Mysql.Where("kd_kat=?", uri.Kd_kat).Delete(&brg_kat)
 		if delete.RowsAffected > 0 {
 			c.JSON(http.StatusNoContent, libraries.StatusNoContent(&brg_kat))
 		} else {
