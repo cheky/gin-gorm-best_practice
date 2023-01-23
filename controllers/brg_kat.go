@@ -86,7 +86,7 @@ func Edit_brg_kat(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, libraries.StatusBadRequest("Tidak terdeteksi adanya perubahan data"))
 		}
 	} else {
-		c.JSON(http.StatusNotFound, libraries.StatusNotFound(map[string]interface{}{
+		c.JSON(http.StatusNotFound, libraries.StatusNotFound(gin.H{
 			"kd_kat": "Kode kategori tidak ditemukan",
 		}))
 	}
@@ -110,7 +110,7 @@ func Delete_brg_kat(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, libraries.StatusBadRequest("Tidak terdeteksi adanya penghapusan data"))
 		}
 	} else {
-		c.JSON(http.StatusNotFound, libraries.StatusNotFound(map[string]interface{}{
+		c.JSON(http.StatusNotFound, libraries.StatusNotFound(gin.H{
 			"kd_kat": "Kode kategori tidak ditemukan",
 		}))
 	}
@@ -119,7 +119,7 @@ func Find_brg_kat(c *gin.Context) {
 	var brg_kat []models.Brg_kat
 	Mysql := config.InitMysql()
 	Mysql.Find(&brg_kat)
-	c.JSON(http.StatusOK, libraries.StatusOk(map[string]interface{}{
+	c.JSON(http.StatusOK, libraries.StatusOk(gin.H{
 		"brg_kat": brg_kat,
 	}))
 }
