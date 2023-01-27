@@ -1,10 +1,9 @@
-package controllers
+package website
 
 import (
 	"apps_barang/config"
 	"apps_barang/libraries"
 	"apps_barang/models"
-	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -41,34 +40,31 @@ var messages_uri_brg_kat = []map[string]interface{}{
 }
 
 func Add_brg_kat(c *gin.Context) {
-
 	body := Form_brg_kat{}
 	if err := c.ShouldBind(&body); err != nil {
 		validate := libraries.ValidationRules(messages_form_brg_kat, err)
-		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
+		libraries.StatusBadRequest(c, validate)
 		return
 	}
 	brg_kat := models.Brg_kat{Nm_kat: body.Nm_kat, Aktif: body.Aktif}
-	Mysql := config.InitMysql()
-	insert := Mysql.Create(&brg_kat)
+	insert, response := models.InsertBrg_kat(&brg_kat)
 	if insert.RowsAffected > 0 {
-		c.JSON(http.StatusCreated, libraries.StatusCreated(&brg_kat))
+		libraries.StatusCreated(c, response)
 	} else {
-		c.JSON(http.StatusInternalServerError, libraries.StatusInternalServerError(insert.Error))
+		libraries.StatusInternalServerError(c, insert.Error)
 	}
 }
 func Edit_brg_kat(c *gin.Context) {
-
 	body := Form_brg_kat{}
 	if err := c.ShouldBind(&body); err != nil {
 		validate := libraries.ValidationRules(messages_form_brg_kat, err)
-		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
+		libraries.StatusBadRequest(c, validate)
 		return
 	}
 	uri := Uri_brg_kat{}
 	if err := c.ShouldBindUri(&uri); err != nil {
 		validate := libraries.ValidationRules(messages_uri_brg_kat, err)
-		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
+		libraries.StatusBadRequest(c, validate)
 		return
 	}
 	brg_kat := models.Brg_kat{}
@@ -81,21 +77,21 @@ func Edit_brg_kat(c *gin.Context) {
 			"aktif":  body.Aktif,
 		})
 		if update.RowsAffected > 0 {
-			c.JSON(http.StatusOK, libraries.StatusOk(&brg_kat))
+			libraries.StatusOk(c, &brg_kat)
 		} else {
-			c.JSON(http.StatusBadRequest, libraries.StatusBadRequest("Tidak terdeteksi adanya perubahan data"))
+			libraries.StatusBadRequest(c, "Tidak terdeteksi adanya perubahan data")
 		}
 	} else {
-		c.JSON(http.StatusNotFound, libraries.StatusNotFound(gin.H{
+		libraries.StatusNotFound(c, gin.H{
 			"kd_kat": "Kode kategori tidak ditemukan",
-		}))
+		})
 	}
 }
 func Delete_brg_kat(c *gin.Context) {
 	uri := Uri_brg_kat{}
 	if err := c.ShouldBindUri(&uri); err != nil {
 		validate := libraries.ValidationRules(messages_uri_brg_kat, err)
-		c.JSON(http.StatusBadRequest, libraries.StatusBadRequest(validate))
+		libraries.StatusBadRequest(c, validate)
 		return
 	}
 	brg_kat := models.Brg_kat{}
@@ -105,21 +101,21 @@ func Delete_brg_kat(c *gin.Context) {
 	if count > 0 {
 		delete := Mysql.Where("kd_kat=?", uri.Kd_kat).Delete(&brg_kat)
 		if delete.RowsAffected > 0 {
-			c.JSON(http.StatusNoContent, libraries.StatusNoContent(&brg_kat))
+			libraries.StatusNoContent(c, &brg_kat)
 		} else {
-			c.JSON(http.StatusBadRequest, libraries.StatusBadRequest("Tidak terdeteksi adanya penghapusan data"))
+			libraries.StatusBadRequest(c, "Tidak terdeteksi adanya penghapusan data")
 		}
 	} else {
-		c.JSON(http.StatusNotFound, libraries.StatusNotFound(gin.H{
+		libraries.StatusNotFound(c, gin.H{
 			"kd_kat": "Kode kategori tidak ditemukan",
-		}))
+		})
 	}
 }
 func Find_brg_kat(c *gin.Context) {
 	var brg_kat []models.Brg_kat
 	Mysql := config.InitMysql()
-	Mysql.Find(&brg_kat)
-	c.JSON(http.StatusOK, libraries.StatusOk(gin.H{
+	Mysql.Preload("Brg").Find(&brg_kat)
+	libraries.StatusOk(c, gin.H{
 		"brg_kat": brg_kat,
-	}))
+	})
 }

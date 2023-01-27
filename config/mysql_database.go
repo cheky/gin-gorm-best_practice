@@ -6,6 +6,7 @@ import (
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var mysql_DB *gorm.DB
@@ -31,8 +32,9 @@ func ConnectMysql() *gorm.DB {
 	var err error
 	dsn := MYSQL_USERNAME + ":" + MYSQL_PASSWORD + "@tcp" + "(" + MYSQL_HOST + ":" + MYSQL_PORT + ")/" + MYSQL_DATABASE + "?" + "parseTime=true&loc=Local"
 	fmt.Println("(MYSQL) dsn : ", dsn)
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		fmt.Println("(MYSQL) Error connecting to database : error=%v", err)
 		return nil
