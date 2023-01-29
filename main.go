@@ -4,6 +4,7 @@ import (
 	"apps_barang/config"
 	"apps_barang/controllers/website"
 	"apps_barang/models"
+	"net/http"
 	"os"
 
 	"github.com/gin-gonic/gin"
@@ -29,10 +30,10 @@ func main() {
 // app route
 func setupRouter() *gin.Engine {
 	r := gin.Default()
+	r.LoadHTMLGlob("views/*.html")
+	r.Static("assets", "./views/assets/")
 	r.GET("/", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"messages": "pong",
-		})
+		c.HTML(http.StatusOK, "index.html", nil)
 	})
 	r.GET("/mysql", func(c *gin.Context) {
 		config.InitMysql()
@@ -44,11 +45,14 @@ func setupRouter() *gin.Engine {
 		Mysql := config.InitMysql()
 		Mysql.AutoMigrate(&models.Brg_kat{})
 		Mysql.AutoMigrate(&models.Brg{})
+		Mysql.AutoMigrate(&models.User{})
 		c.JSON(200, gin.H{
 			"messages": "Auto Migrate Mysql Database Successfully",
 		})
 	})
-	web := r.Group("/web")
+	web := r.Group("/website")
+	web.POST("/login", website.Login)
+
 	web.POST("/brg_kat", website.Add_brg_kat)
 	web.PUT("/brg_kat/:kd_kat", website.Edit_brg_kat)
 	web.DELETE("/brg_kat/:kd_kat", website.Delete_brg_kat)
@@ -58,5 +62,6 @@ func setupRouter() *gin.Engine {
 	web.PUT("/brg/:kd_brg", website.Edit_brg)
 	web.DELETE("/brg/:kd_brg", website.Delete_brg)
 	web.GET("/brg", website.Find_brg)
+	web.GET("/brg/datatables", website.Datatables_brg)
 	return r
 }

@@ -1,0 +1,70 @@
+<html>
+
+<head>
+    <title>Test Data Barang</title>
+    <link href="assets/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href="assets/datatables/DataTables-1.10.23/css/dataTables.bootstrap4.min.css" rel="stylesheet"
+        type="text/css">
+    <link href="assets/datatables/DataTables-1.10.23/css/dataTables.bootstrap4.min.css" rel="stylesheet"
+        type="text/css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="row">
+<div class="col-md-3 offset-md-9">
+    <div class="form-group">
+        <select name="skd_kat" class="form-control input-sm">
+            <option value="">Semua Kategori</option>
+            <option value="1">Perabot</option>
+            <option value="2">Sabun</option>
+        </select>
+    </div>
+</div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-bordered" id="table_brg">
+                    <thead>
+                        <tr>
+                            <th>Nama Barang</th>
+                            <th>Nama Kategori</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>    
+    </div>
+    <script src="assets/jquery/dist/jquery.min.js"></script>
+    <script src="assets/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="assets/datatables/DataTables-1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="assets/datatables/DataTables-1.10.23/js/dataTables.bootstrap4.min.js"></script>
+    <script src="assets/datatables/Responsive-2.2.7/js/dataTables.responsive.min.js"></script>
+    <script src="assets/datatables/Responsive-2.2.7/js/responsive.bootstrap4.min.js"></script>
+    <script src="assets/datatables/install.js"></script>
+    <script>
+        $(document).ready(function () {
+            var table_brg=$('#table_brg').DataTable({
+                ajax: {
+                    url: "http://localhost:1234/website/brg/datatables",
+                    type: 'GET',
+                    error: function (er) {
+                        console.log(er.responseText)
+                    }
+                },columns:[
+                    {
+                        data:'nm_brg'
+                    },{
+                        data:'nm_kat'
+                    }
+                ]
+            });
+            //pencarian
+            $('select[name="skd_kat"]').on('change',function(){
+                table_brg.column(0).search($(this).val()).draw();
+            });
+        });
+    </script>
+</body>
+
+</html>

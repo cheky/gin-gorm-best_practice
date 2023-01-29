@@ -3,6 +3,8 @@ package website
 import (
 	"apps_barang/libraries"
 	"apps_barang/models"
+	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -165,4 +167,77 @@ func Find_brg(c *gin.Context) {
 	libraries.StatusOk(c, gin.H{
 		"brg": result,
 	})
+}
+func Datatables_brg(c *gin.Context) {
+	query := c.Request.URL.Query()
+	var _draw, _start, _length int64
+	var _search, _order_column, _order_dir string
+	for k, v := range query {
+		if k == "draw" {
+			i, err := strconv.ParseInt(v[0], 10, 64)
+			if err != nil {
+				return
+			}
+			_draw = i
+		}
+		if k == "start" {
+			i, err := strconv.ParseInt(v[0], 10, 64)
+			if err != nil {
+				return
+			}
+			_start = i
+		}
+		if k == "length" {
+			i, err := strconv.ParseInt(v[0], 10, 64)
+			if err != nil {
+				return
+			}
+			_length = i
+		}
+		if k == "search[value]" {
+			_search = v[0]
+		}
+		if k == "order[0][column]" {
+			_order_column = query["columns["+v[0]+"][data]"][0]
+		}
+		if k == "order[0][dir]" {
+			_order_dir = v[0]
+		}
+	}
+	//fmt.Println("draw : ", _draw)
+	//fmt.Println("start : ", _start)
+	//fmt.Println("length: ", _length)
+	//fmt.Println("search: ", _search)
+	//fmt.Println("order column: ", _order_column)
+	//fmt.Println("order dir:", _order_dir)
+	kd_kat := query["columns[0][search][value]"][0]
+	where := map[string]interface{}{}
+	if len(kd_kat) > 0 {
+		where["brg.kd_kat"] = kd_kat
+	}
+	if len(_search) > 0 {
+		where["brg.nm_brg LIKE '%"+_search+"%'"] = false
+	}
+
+	//mencari jumlah data berdasarkan kd_brg
+	c_brg := models.CountBrg(where)
+	result := []map[string]interface{}{}
+	selector := models.FindBrg([]string{
+		"brg.kd_brg",
+		"brg.nm_brg",
+		"brg_kat.nm_kat",
+		"brg.aktif",
+		"DATE_FORMAT(brg.on_create,'%Y-%m-%d %H:%i:%s') AS on_create",
+		"DATE_FORMAT(brg.on_update,'%Y-%m-%d %H:%i:%s') AS on_update",
+	}, where)
+	selector.Limit(int(_length)).Offset(int(_start))
+	selector.Order(_order_column + " " + _order_dir)
+	selector.Scan(&result)
+	c.JSON(http.StatusOK, gin.H{
+		"draw":            _draw,
+		"recordsTotal":    c_brg,
+		"recordsFiltered": c_brg,
+		"data":            result,
+	})
+
 }
