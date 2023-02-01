@@ -63,5 +63,6 @@ func setupRouter() *gin.Engine {
 	web.DELETE("/brg/:kd_brg", website.Delete_brg)
 	web.GET("/brg", website.Find_brg)
 	web.GET("/brg/datatables", website.Datatables_brg)
+	web.POST("/brg/upload", website.Upload_foto)
 	return r
 }

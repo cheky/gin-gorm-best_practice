@@ -3,8 +3,9 @@ package website
 import (
 	"apps_barang/libraries"
 	"apps_barang/models"
+	"fmt"
 	"net/http"
-	"strconv"
+	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
@@ -169,48 +170,8 @@ func Find_brg(c *gin.Context) {
 	})
 }
 func Datatables_brg(c *gin.Context) {
-	query := c.Request.URL.Query()
-	var _draw, _start, _length int64
-	var _search, _order_column, _order_dir string
-	for k, v := range query {
-		if k == "draw" {
-			i, err := strconv.ParseInt(v[0], 10, 64)
-			if err != nil {
-				return
-			}
-			_draw = i
-		}
-		if k == "start" {
-			i, err := strconv.ParseInt(v[0], 10, 64)
-			if err != nil {
-				return
-			}
-			_start = i
-		}
-		if k == "length" {
-			i, err := strconv.ParseInt(v[0], 10, 64)
-			if err != nil {
-				return
-			}
-			_length = i
-		}
-		if k == "search[value]" {
-			_search = v[0]
-		}
-		if k == "order[0][column]" {
-			_order_column = query["columns["+v[0]+"][data]"][0]
-		}
-		if k == "order[0][dir]" {
-			_order_dir = v[0]
-		}
-	}
-	//fmt.Println("draw : ", _draw)
-	//fmt.Println("start : ", _start)
-	//fmt.Println("length: ", _length)
-	//fmt.Println("search: ", _search)
-	//fmt.Println("order column: ", _order_column)
-	//fmt.Println("order dir:", _order_dir)
-	kd_kat := query["columns[0][search][value]"][0]
+	_draw, _start, _length, _search, _order_column, _order_dir := libraries.DatatableInit(c)
+	kd_kat := libraries.DatatableSearch(c, 0)
 	where := map[string]interface{}{}
 	if len(kd_kat) > 0 {
 		where["brg.kd_kat"] = kd_kat
@@ -230,7 +191,7 @@ func Datatables_brg(c *gin.Context) {
 		"DATE_FORMAT(brg.on_create,'%Y-%m-%d %H:%i:%s') AS on_create",
 		"DATE_FORMAT(brg.on_update,'%Y-%m-%d %H:%i:%s') AS on_update",
 	}, where)
-	selector.Limit(int(_length)).Offset(int(_start))
+	selector.Limit(_length).Offset(_start)
 	selector.Order(_order_column + " " + _order_dir)
 	selector.Scan(&result)
 	c.JSON(http.StatusOK, gin.H{
@@ -240,4 +201,36 @@ func Datatables_brg(c *gin.Context) {
 		"data":            result,
 	})
 
+}
+func Upload_foto(c *gin.Context) {
+	file, err := c.FormFile("foto")
+	// The file cannot be received.
+	if err != nil {
+		libraries.StatusBadRequest(c, gin.H{
+			"foto": "File foto harus diisi",
+		})
+		return
+	}
+	// Retrieve file information
+	extension := filepath.Ext(file.Filename)
+	fmt.Println(c.Request)
+	if extension != ".png" && extension != ".jpg" {
+		libraries.StatusBadRequest(c, "Upload foto gagal, Ekstensi file yang dijinkan hanya png dan jpg")
+		return
+	}
+	// Generate random file name for the new uploaded file so it doesn't override the old file with same name
+	newFileName := "Jamali" + extension
+	// The file is received, so let's save it
+	if err := c.SaveUploadedFile(file, newFileName); err != nil {
+		libraries.StatusBadRequest(c, err)
+		return
+	}
+	//upload file to owncloud
+	er := libraries.OwnloadUpload(newFileName, "/teralink/"+newFileName)
+	if er != nil {
+		libraries.StatusBadRequest(c, err)
+		return
+	}
+	// File saved successfully. Return proper result
+	libraries.StatusOk(c, "File foto berhasil diupload")
 }
