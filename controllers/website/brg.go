@@ -3,7 +3,6 @@ package website
 import (
 	"apps_barang/libraries"
 	"apps_barang/models"
-	"fmt"
 	"net/http"
 	"path/filepath"
 
@@ -213,9 +212,12 @@ func Upload_foto(c *gin.Context) {
 	}
 	// Retrieve file information
 	extension := filepath.Ext(file.Filename)
-	fmt.Println(c.Request)
 	if extension != ".png" && extension != ".jpg" {
 		libraries.StatusBadRequest(c, "Upload foto gagal, Ekstensi file yang dijinkan hanya png dan jpg")
+		return
+	}
+	if file.Size/1024 > 100 {
+		libraries.StatusBadRequest(c, "Upload foto gagal, Ukuran maksimal file adalah 100KB")
 		return
 	}
 	// Generate random file name for the new uploaded file so it doesn't override the old file with same name
