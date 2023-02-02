@@ -226,11 +226,23 @@ func Upload_foto(c *gin.Context) {
 		return
 	}
 	//upload file to owncloud
-	er := libraries.OwnloadUpload(newFileName, "/teralink/"+newFileName)
-	if er != nil {
-		libraries.StatusBadRequest(c, err)
+	er_upload := libraries.OwncloudUpload("/teralink/"+newFileName, newFileName)
+	if er_upload != nil {
+		libraries.StatusBadRequest(c, er_upload)
 		return
 	}
+	//mkdir to owncloud
+	// er_mkdir := libraries.OwncloudMkdir("/teralink/doc")
+	// if er_mkdir != nil {
+	// 	libraries.StatusBadRequest(c, er_mkdir)
+	// 	return
+	// }
+	//delete file in owncloud
+	// err_delete := libraries.OwncloudDelete("teralink/" + newFileName)
+	// if err_delete != nil {
+	// 	libraries.StatusBadRequest(c, err_delete)
+	// 	return
+	// }
 	// File saved successfully. Return proper result
 	libraries.StatusOk(c, "File foto berhasil diupload")
 }
