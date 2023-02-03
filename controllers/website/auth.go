@@ -59,7 +59,7 @@ func Login(c *gin.Context) {
 			Salt     string `json:"salt"`
 			Password string `json:"password"`
 		}
-		find_user := models.FindBrg([]string{
+		find_user := models.FindUser([]string{
 			"user.kd_user",
 			"user.nm_user",
 			"user.salt",

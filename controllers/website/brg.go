@@ -228,7 +228,7 @@ func Upload_foto(c *gin.Context) {
 		return
 	}
 	//upload file to owncloud
-	er_upload := libraries.OwncloudUpload("/teralink/"+newFileName, newFileName)
+	er_upload := libraries.OwncloudUpload("teralink/"+newFileName, newFileName)
 	if er_upload != nil {
 		libraries.StatusBadRequest(c, er_upload)
 		return
