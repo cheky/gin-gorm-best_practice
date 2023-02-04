@@ -3,6 +3,7 @@ package main
 import (
 	"apps_barang/config"
 	"apps_barang/controllers/website"
+	"apps_barang/libraries"
 	"apps_barang/models"
 	"net/http"
 	"os"
@@ -10,7 +11,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	gindump "github.com/tpkeeper/gin-dump"
 )
 
 func main() {
@@ -38,7 +38,7 @@ func setupRouter() *gin.Engine {
 	//auto recovery
 	r.Use(gin.Recovery())
 	//dum log request and response
-	r.Use(gindump.Dump())
+	r.Use(libraries.SysLog())
 	r.LoadHTMLGlob("views/*.html")
 	r.Static("assets", "./views/assets/")
 	r.GET("/", func(c *gin.Context) {
@@ -47,7 +47,7 @@ func setupRouter() *gin.Engine {
 	r.GET("/mysql", func(c *gin.Context) {
 		config.InitMysql()
 		c.JSON(200, gin.H{
-			"messages": "gin-dump",
+			"messages": "Connection MySQL complete",
 		})
 	})
 	r.GET("/automigrate", func(c *gin.Context) {
